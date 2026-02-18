@@ -4,6 +4,14 @@ import { useState } from 'react';
 
 const projects = [
     {
+        title: 'AI Image Detector',
+        description: 'Web app for detecting AI-generated images using deep learning (CNN). Trained on the CIFAKE dataset from Kaggle to distinguish between synthetic and authentic visuals.',
+        tags: ['Next.js', 'FastAPI', 'TensorFlow', 'CNN', 'Deep Learning'],
+        color: '#6366f1', // Indigo
+        link: 'https://github.com/gabrielutomo/ai-detector',
+        image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=800',
+    },
+    {
         title: 'Bandar Lampung Rainfall Prediction',
         description: 'A rainfall prediction system using the K-Nearest Neighbor (KNN) algorithm, developed with the Laravel framework to provide accurate data for the Bandar Lampung region.',
         tags: ['Laravel', 'PHP', 'KNN Algorithm', 'Machine Learning'],
@@ -20,6 +28,7 @@ const projects = [
         image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800',
     }
 ];
+
 
 const ProjectsSection = () => {
     const [hovered, setHovered] = useState<number | null>(null);
