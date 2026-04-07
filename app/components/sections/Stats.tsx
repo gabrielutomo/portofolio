@@ -3,7 +3,7 @@
 import { motion } from 'motion/react';
 
 const stats = [
-    { label: 'Core Projects', value: '3+' },
+    { label: 'Core Projects', value: '5+' },
     { label: 'Technologies', value: '12+' },
     { label: 'Current Status', value: 'Student' },
     { label: 'Location', value: 'Bandar Lampung' },
