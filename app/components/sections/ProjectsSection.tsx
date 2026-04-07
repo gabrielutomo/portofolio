@@ -26,7 +26,23 @@ const projects = [
         color: '#F9AB00', // Google Yellow/Orange
         link: 'https://github.com/gabrielutomo/uas-machinelearning-linnerud',
         image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800',
-    }
+    },
+    {
+        title: 'Blurred Frame',
+        description: 'A fun and interactive selfie website where users can take photos with creative filters and cute frames — perfect for capturing memorable moments in style.',
+        tags: ['Next.js', 'Canvas API', 'Filters', 'Webcam'],
+        color: '#ec4899', // Pink
+        link: 'https://blurred-frame.vercel.app/',
+        image: 'https://images.unsplash.com/photo-1512790182412-b19e6d62bc39?auto=format&fit=crop&q=80&w=800',
+    },
+    {
+        title: 'Distrik Bunyi',
+        description: 'A music platform delivering curated news and weekly release highlights from the Indonesian music scene, shining a light on underrated local artists and hidden gems.',
+        tags: ['Next.js', 'Music News', 'Indonesian Music', 'Weekly Releases'],
+        color: '#14b8a6', // Teal
+        link: 'https://distrik-bunyi.vercel.app/',
+        image: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800',
+    },
 ];
 
 
