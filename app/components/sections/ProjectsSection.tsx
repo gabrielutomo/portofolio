@@ -16,7 +16,7 @@ const projects = [
         description: 'A rainfall prediction system using the K-Nearest Neighbor (KNN) algorithm, developed with the Laravel framework to provide accurate data for the Bandar Lampung region.',
         tags: ['Laravel', 'PHP', 'KNN Algorithm', 'Machine Learning'],
         color: '#FF2D20', // Laravel Red
-        link: 'https://skycast-intelligence.up.railway.app/',
+        link: 'skycast-intelligence-production.up.railway.app/',
         image: 'https://images.unsplash.com/photo-1534088568595-a066f410bcda?auto=format&fit=crop&q=80&w=800',
     },
     {
