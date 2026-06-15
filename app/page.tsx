@@ -196,7 +196,7 @@ export default function Home() {
 
           <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
             <div className="reveal">
-              <LanyardAbout imageSrc="/profile2.jpg" />
+              <LanyardAbout imageSrc="/profile.jpg" />
             </div>
           </div>
         </section>
