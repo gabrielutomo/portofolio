@@ -9,13 +9,14 @@ import TrueFocus from './components/text/TrueFocus';
 import ProfileCard from './components/sections/ProfileCard';
 import LanyardAbout from './components/sections/LanyardAbout';
 import SkillsSection from './components/sections/SkillsSection';
-import ProjectsSection from './components/sections/ProjectsSection';
+import MobileOptimizedProjectsSection from './components/sections/MobileOptimizedProjectsSection';
 import ContactSection from './components/sections/ContactSection';
 import Stats from './components/sections/Stats';
 
-// Dynamic imports for effects
+// Dynamic imports for heavy effects — Task 4.2 / 8.3
 const Squares = dynamic(() => import('./components/backgrounds/Squares'), { ssr: false });
 const Particles = dynamic(() => import('./components/backgrounds/Particles'), { ssr: false });
+const DitherBackground = dynamic(() => import('./components/backgrounds/DitherBackground'), { ssr: false });
 
 function useScrollReveal() {
   useEffect(() => {
@@ -46,6 +47,7 @@ export default function Home() {
 
       {/* Background Effects Container */}
       <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
+        {/* Animated squares grid */}
         <Squares
           direction="diagonal"
           speed={0.3}
@@ -54,6 +56,7 @@ export default function Home() {
           hoverFillColor="rgba(99,102,241,0.05)"
           className=""
         />
+        {/* Floating particles */}
         <div style={{ position: 'absolute', inset: 0 }}>
           <Particles
             particleCount={40}
@@ -64,13 +67,8 @@ export default function Home() {
             alphaParticles
           />
         </div>
-        {/* Dither pattern */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E")`,
-          opacity: 0.3,
-        }} />
+        {/* Dither background — Task 6.3, auto-adjusts by performance tier */}
+        <DitherBackground />
       </div>
 
       <div style={{ position: 'relative', zIndex: 1 }}>
@@ -83,19 +81,27 @@ export default function Home() {
             minHeight: '100vh',
             display: 'flex',
             alignItems: 'center',
-            padding: '120px 24px 80px',
+            padding: 'clamp(100px, 15vh, 140px) clamp(16px, 4vw, 48px) clamp(60px, 8vh, 100px)',
           }}
         >
-          <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%', display: 'flex', gap: 'clamp(40px, 8vw, 80px)', alignItems: 'center', flexWrap: 'wrap-reverse' }}>
+          <div style={{
+            maxWidth: '1200px',
+            margin: '0 auto',
+            width: '100%',
+            display: 'flex',
+            gap: 'clamp(32px, 6vw, 80px)',
+            alignItems: 'center',
+            flexWrap: 'wrap-reverse',
+          }}>
 
             {/* Left: Content (Asymmetric dominance) */}
-            <div ref={containerRef} style={{ flex: '1.2', minWidth: '320px' }}>
+            <div ref={containerRef} style={{ flex: '1.2', minWidth: '280px' }}>
               <div style={{ marginBottom: '24px', animation: 'fadeInUp 0.8s ease' }}>
                 <h1 style={{
-                  fontSize: 'clamp(3rem, 7vw, 5.5rem)',
+                  fontSize: 'clamp(2.5rem, 7vw, 5.5rem)',
                   fontWeight: 900,
                   lineHeight: 0.95,
-                  letterSpacing: '-3px',
+                  letterSpacing: 'clamp(-2px, -0.5vw, -3px)',
                   fontFamily: "'Space Grotesk', sans-serif",
                 }}>
                   <ShinyText text="Gabriel Adetya" color="rgba(248,250,252,0.95)" shineColor="#ffffff" speed={3} className="" />
@@ -105,7 +111,7 @@ export default function Home() {
               </div>
 
               <div style={{
-                fontSize: 'clamp(1rem, 2.5vw, 1.3rem)',
+                fontSize: 'clamp(0.9rem, 2.5vw, 1.3rem)',
                 color: 'rgba(148,163,184,0.8)',
                 marginBottom: '32px',
                 animation: 'fadeInUp 0.8s ease 0.2s both'
@@ -120,7 +126,7 @@ export default function Home() {
 
               <div style={{
                 maxWidth: '540px',
-                marginBottom: '48px',
+                marginBottom: '40px',
                 animation: 'fadeInUp 0.8s ease 0.4s both'
               }}>
                 <VariableProximity
@@ -132,16 +138,34 @@ export default function Home() {
                 />
               </div>
 
-              <div style={{ animation: 'fadeInUp 0.8s ease 0.6s both', display: 'flex', gap: '16px' }}>
-                <a href="#projects" className="btn-primary"><span>Explore My Work</span></a>
-                <a href="#contact" className="btn-secondary">Get in Touch</a>
+              <div style={{
+                animation: 'fadeInUp 0.8s ease 0.6s both',
+                display: 'flex',
+                gap: '12px',
+                flexWrap: 'wrap',
+              }}>
+                <a href="#projects" className="btn-primary" id="hero-cta-projects">
+                  <span>Explore My Work</span>
+                </a>
+                <a href="#contact" className="btn-secondary" id="hero-cta-contact">
+                  Get in Touch
+                </a>
               </div>
 
               <Stats />
             </div>
 
             {/* Right: Floating Card (Organic Placement) */}
-            <div className="reveal" style={{ flex: '0.8', display: 'flex', justifyContent: 'center', animationDelay: '0.2s' }}>
+            <div
+              className="reveal"
+              style={{
+                flex: '0.8',
+                display: 'flex',
+                justifyContent: 'center',
+                animationDelay: '0.2s',
+                minWidth: '240px',
+              }}
+            >
               <ProfileCard
                 name="Gabriel Adetya Utomo"
                 title="Full Stack Engineer"
@@ -154,10 +178,10 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ===== ABOUT: THE PENDULUM SECTION (Restored Spacing) ===== */}
+        {/* ===== ABOUT ===== */}
         <section
           id="about"
-          style={{ padding: '160px 24px', position: 'relative' }}
+          style={{ padding: 'clamp(80px, 12vw, 160px) clamp(16px, 4vw, 48px)', position: 'relative' }}
         >
           {/* Subtle decoration */}
           <div style={{
@@ -167,6 +191,7 @@ export default function Home() {
             width: '40%',
             height: '40%',
             background: 'radial-gradient(circle, rgba(99,102,241,0.05) 0%, transparent 70%)',
+            pointerEvents: 'none',
           }} />
 
           <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
@@ -176,31 +201,31 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ===== MOTTO: FILLING THE GAP ===== */}
-        <section style={{ padding: '80px 24px', textAlign: 'center' }}>
+        {/* ===== MOTTO ===== */}
+        <section style={{ padding: 'clamp(40px, 6vw, 80px) clamp(16px, 4vw, 48px)', textAlign: 'center' }}>
           <div className="reveal" style={{ maxWidth: '800px', margin: '0 auto' }}>
             <h3 style={{
-              fontSize: 'clamp(1.5rem, 3vw, 2.2rem)',
+              fontSize: 'clamp(1.2rem, 3vw, 2.2rem)',
               fontWeight: 600,
               color: 'rgba(255,255,255,0.4)',
               lineHeight: 1.4,
               fontStyle: 'italic'
             }}>
-              "Grow in wisdom, <span style={{ color: '#6366f1', fontStyle: 'normal' }}>build with purpose</span>,
-              and let every work reflect grace."
+              &quot;Grow in wisdom, <span style={{ color: '#6366f1', fontStyle: 'normal' }}>build with purpose</span>,
+              and let every work reflect grace.&quot;
             </h3>
           </div>
         </section>
 
-        {/* ===== SKILLS: GRID VARIATION ===== */}
+        {/* ===== SKILLS ===== */}
         <section
           id="skills"
-          style={{ padding: '160px 24px' }}
+          style={{ padding: 'clamp(80px, 12vw, 160px) clamp(16px, 4vw, 48px)' }}
         >
           <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-            <div className="reveal" style={{ marginBottom: '80px' }}>
+            <div className="reveal" style={{ marginBottom: '60px' }}>
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: '20px', flexWrap: 'wrap' }}>
-                <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 800, color: '#fff' }}>
+                <h2 style={{ fontSize: 'clamp(2rem, 5vw, 4rem)', fontWeight: 800, color: '#fff' }}>
                   Tools of the <span style={{ color: '#6366f1' }}>Trade.</span>
                 </h2>
                 <p style={{ color: 'rgba(148,163,184,0.6)', maxWidth: '400px', paddingBottom: '10px' }}>
@@ -215,31 +240,35 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ===== PROJECTS: STAGGERED FLOW ===== */}
+        {/* ===== PROJECTS — Task 2.2 / 6.1 / 6.2 ===== */}
         <section
           id="projects"
-          style={{ padding: '160px 24px', background: 'rgba(255,255,255,0.01)' }}
+          style={{ padding: 'clamp(80px, 12vw, 160px) clamp(16px, 4vw, 48px)', background: 'rgba(255,255,255,0.01)' }}
         >
           <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <div className="reveal" style={{ textAlign: 'center', marginBottom: '80px' }}>
+            <div className="reveal" style={{ textAlign: 'center', marginBottom: 'clamp(40px, 6vw, 80px)' }}>
               <span className="tag" style={{ marginBottom: '16px' }}>Curated Portfolio</span>
-              <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 800, color: '#fff' }}>Featured Projects</h2>
+              <h2 style={{ fontSize: 'clamp(2rem, 5vw, 4rem)', fontWeight: 800, color: '#fff' }}>
+                Featured Projects
+              </h2>
             </div>
             <div className="reveal">
-              <ProjectsSection />
+              {/* MobileOptimizedProjectsSection replaces old ProjectsSection */}
+              <MobileOptimizedProjectsSection />
             </div>
           </div>
         </section>
 
-        {/* ===== CONTACT: PREMIUM FINALE ===== */}
+        {/* ===== CONTACT ===== */}
         <section
           id="contact"
-          style={{ padding: '200px 24px', position: 'relative' }}
+          style={{ padding: 'clamp(100px, 15vw, 200px) clamp(16px, 4vw, 48px)', position: 'relative' }}
         >
           <div style={{
             position: 'absolute',
             inset: 0,
             background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.08) 0%, transparent 70%)',
+            pointerEvents: 'none',
           }} />
           <div style={{ maxWidth: '900px', margin: '0 auto' }}>
             <div className="reveal">
@@ -248,19 +277,16 @@ export default function Home() {
           </div>
         </section>
 
-        <footer style={{ padding: '40px 24px', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <footer style={{
+          padding: 'clamp(24px, 4vw, 40px) clamp(16px, 4vw, 24px)',
+          textAlign: 'center',
+          borderTop: '1px solid rgba(255,255,255,0.05)',
+        }}>
           <p style={{ fontSize: '13px', color: 'rgba(148,163,184,0.4)', letterSpacing: '1px' }}>
             © {new Date().getFullYear()} GABRIEL ADETYA UTOMO
           </p>
         </footer>
       </div>
-
-      <style>{`
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
     </main>
   );
 }

@@ -33,8 +33,13 @@ const SkillsSection = () => {
             {skills.map((skill, index) => (
                 <div
                     key={index}
+                    tabIndex={0}
+                    role="img"
+                    aria-label={`${skill.name} skill`}
                     onMouseEnter={() => setHovered(index)}
                     onMouseLeave={() => setHovered(null)}
+                    onFocus={() => setHovered(index)}
+                    onBlur={() => setHovered(null)}
                     style={{
                         position: 'relative',
                         width: '90px',
@@ -48,6 +53,7 @@ const SkillsSection = () => {
                         transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
                         transform: hovered === index ? 'translateY(-10px) scale(1.1)' : 'translateY(0) scale(1)',
                         boxShadow: hovered === index ? `0 20px 40px rgba(0,0,0,0.4), 0 0 25px ${skill.color}30` : 'none',
+                        outline: 'none',
                     }}
                 >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
