@@ -10,12 +10,12 @@ interface LanyardAboutProps {
 
 const LanyardAbout: React.FC<LanyardAboutProps> = ({ imageSrc }) => {
 
-    const hobbies = ['Guitar', 'Bass Guitar', 'Music Enthusiast', 'Explorer'];
+    const hobbies = ['Guitar', 'Bass Guitar', 'Music Enthusiast', 'Explorer', 'AI Enthusiast', 'AI-Assisted Design', 'Automation & Workflow Tools'];
     const facts = [
         { icon: '', label: 'University', value: 'IIB Darmajaya' },
         { icon: '', label: 'Major', value: 'Informatics Engineering' },
         { icon: '', label: 'Location', value: 'Bandar Lampung, Indonesia' },
-        { icon: '', label: 'Status', value: 'Student' },
+        { icon: '', label: 'GPA', value: '3.77 / 4.00' },
     ];
 
     return (
@@ -54,16 +54,21 @@ const LanyardAbout: React.FC<LanyardAboutProps> = ({ imageSrc }) => {
                     fontWeight: 800,
                     color: '#f8fafc',
                     lineHeight: 1.2,
-                    marginBottom: '20px',
+                    marginBottom: '8px',
                 }}>
-                    Passionate Developer &<br />
-                    <span style={{
-                        background: 'linear-gradient(135deg, #6366f1, #06b6d4)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text',
-                    }}>Creative Thinker</span>
+                    Passionate Developer &amp; Creative Thinker
                 </h2>
+                <h3 style={{
+                    fontSize: 'clamp(1rem, 2.5vw, 1.4rem)',
+                    fontWeight: 600,
+                    marginBottom: '20px',
+                    background: 'linear-gradient(135deg, #6366f1, #06b6d4)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                }}>
+                    &ldquo;Frontend Developer with a Design Eye&rdquo;
+                </h3>
 
                 <p style={{
                     fontSize: '16px',
@@ -71,9 +76,13 @@ const LanyardAbout: React.FC<LanyardAboutProps> = ({ imageSrc }) => {
                     lineHeight: 1.8,
                     marginBottom: '24px',
                 }}>
-                    I&apos;m a Computer Science student at <strong style={{ color: '#c7d2fe' }}>IIB Darmajaya</strong>,
-                    specializing in Informatics Engineering. I&apos;m passionate about building
-                    full-stack web applications, exploring machine learning, and crafting beautiful UI/UX experiences.
+                    I&apos;m a fresh graduate in Informatics Engineering from{' '}
+                    <strong style={{ color: '#c7d2fe' }}>IIB Darmajaya</strong> (GPA 3.77/4.00), with 3 years of
+                    hands-on experience in web development, UI/UX design, and startup operations. I enjoy turning
+                    ideas into clean, functional, and user-centered products — from designing interfaces in Figma
+                    to building them with React, Next.js, and Tailwind CSS. I&apos;m currently focused on growing
+                    as a frontend/full-stack developer, with a strong interest in crafting interfaces that feel
+                    as good as they look.
                 </p>
 
                 {/* Facts grid */}

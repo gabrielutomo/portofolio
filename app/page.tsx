@@ -130,7 +130,7 @@ export default function Home() {
                 animation: 'fadeInUp 0.8s ease 0.4s both'
               }}>
                 <VariableProximity
-                  label="A passionate tech learner committed to continuous growth in Web Development, UI/UX Design, and Full-Stack Engineering."
+                  label="Open to new opportunities. I build clean, functional, and user-centered web applications — from frontend interfaces to full-stack systems"
                   fromFontVariationSettings="'wght' 300"
                   toFontVariationSettings="'wght' 700"
                   containerRef={containerRef as React.RefObject<HTMLElement>}
@@ -170,7 +170,7 @@ export default function Home() {
                 name="Gabriel Adetya Utomo"
                 title="Full Stack Engineer"
                 status="Available for high impact projects and software engineering roles."
-                imageSrc="/profile.jpg"
+                imageSrc="/profile2.jpg"
                 linkedin="https://www.linkedin.com/in/gabriel-adetya-utomo-9232b63a9/"
                 github="https://github.com/gabrielutomo"
               />
@@ -196,7 +196,7 @@ export default function Home() {
 
           <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
             <div className="reveal">
-              <LanyardAbout imageSrc="/profile.jpg" />
+              <LanyardAbout imageSrc="/profile2.jpg" />
             </div>
           </div>
         </section>
