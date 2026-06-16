@@ -82,7 +82,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
                         fill
                         style={{
                             objectFit: 'cover',
-                            objectPosition: 'center top',
+                            objectPosition: 'center 20%',
                         }}
                         priority
                     />
