@@ -19,14 +19,14 @@ const LanyardAbout: React.FC<LanyardAboutProps> = ({ imageSrc }) => {
     ];
 
     return (
-        <div style={{ display: 'flex', gap: '60px', alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', gap: '60px', alignItems: 'stretch', flexWrap: 'wrap', justifyContent: 'center' }}>
             {/* Lanyard Card Wrapper */}
-            <div className="reveal" style={{ flexShrink: 0, width: '480px', height: '680px' }}>
+            <div className="reveal" style={{ flexShrink: 0, width: '460px', minHeight: '500px', height: '100%' }}>
                 <Lanyard
                     frontImage={imageSrc}
-                    position={[0, -1, 5.5]}
+                    position={[0, -1, 4]}
                     gravity={[0, -40, 0]}
-                    fov={28}
+                    fov={13}
                     lanyardWidth={1}
                 />
             </div>
