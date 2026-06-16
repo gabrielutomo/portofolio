@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unknown-property */
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Canvas, extend, useFrame } from '@react-three/fiber';
+import { Canvas, extend, useFrame, useThree } from '@react-three/fiber';
 import { useGLTF, useTexture, Environment, Lightformer } from '@react-three/drei';
 import {
   BallCollider,
@@ -30,6 +30,7 @@ const BACK_UV_RECT = { x: 0.5, y: 0, w: 0.5, h: 0.757 };
 
 interface LanyardProps {
   position?: [number, number, number];
+  lookAt?: [number, number, number];
   gravity?: [number, number, number];
   fov?: number;
   transparent?: boolean;
@@ -40,8 +41,17 @@ interface LanyardProps {
   lanyardWidth?: number;
 }
 
+function CameraLookAt({ target }: { target: [number, number, number] }) {
+  const { camera } = useThree();
+  useEffect(() => {
+    camera.lookAt(target[0], target[1], target[2]);
+  }, [camera, target[0], target[1], target[2]]);
+  return null;
+}
+
 export default function Lanyard({
   position = [0, 0, 30],
+  lookAt = [0, 0, 0] as [number, number, number],
   gravity = [0, -40, 0],
   fov = 20,
   transparent = true,
@@ -71,6 +81,7 @@ export default function Lanyard({
           gl.setClearColor(new THREE.Color(0x000000), transparent ? 0 : 1)
         }
       >
+        <CameraLookAt target={lookAt} />
         <ambientLight intensity={Math.PI} />
         <Physics gravity={gravity} timeStep={isMobile ? 1 / 30 : 1 / 60}>
           <Band
