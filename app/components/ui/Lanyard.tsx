@@ -252,7 +252,7 @@ const Lanyard: React.FC<LanyardProps> = ({ imageSrc, cardTitle, cardSubtitle, ca
                             src={imageSrc}
                             alt="ID Card Photo"
                             fill
-                            style={{ objectFit: 'cover', objectPosition: 'center 30%' }}
+                            style={{ objectFit: 'cover', objectPosition: 'center bottom' }}
                             draggable={false}
                         />
                     </div>
