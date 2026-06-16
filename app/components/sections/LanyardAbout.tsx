@@ -27,7 +27,7 @@ const LanyardAbout: React.FC<LanyardAboutProps> = ({ imageSrc }) => {
                     position={[0, 0, 5]}
                     lookAt={[0, -1, 0]}
                     gravity={[0, -40, 0]}
-                    fov={40}
+                    fov={9}
                     lanyardWidth={1}
                 />
             </div>
