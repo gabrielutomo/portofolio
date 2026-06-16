@@ -130,7 +130,7 @@ export default function Home() {
                 animation: 'fadeInUp 0.8s ease 0.4s both'
               }}>
                 <VariableProximity
-                  label="Open to new opportunities. I build clean, functional, and user-centered web applications — from frontend interfaces to full-stack systems"
+                  label="Open to new opportunities. I build clean, functional, and user-centered web applications from frontend interfaces to full-stack systems"
                   fromFontVariationSettings="'wght' 300"
                   toFontVariationSettings="'wght' 700"
                   containerRef={containerRef as React.RefObject<HTMLElement>}
