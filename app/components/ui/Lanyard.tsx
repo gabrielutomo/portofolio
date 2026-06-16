@@ -187,7 +187,7 @@ function Band({
       const dw = img.width * scale;
       const dh = img.height * scale;
       const dx = rx + (rw - dw) / 2;
-      const dy = ry + (rh - dh) / 2;
+      const dy = ry + (rh - dh); // Align to the bottom of the card face
       ctx.save();
       ctx.beginPath();
       ctx.rect(rx, ry, rw, rh);
@@ -224,7 +224,7 @@ function Band({
   useRopeJoint(j2, j3, [[0, 0, 0], [0, 0, 0], 1] as any);
   useSphericalJoint(j3, card, [
     [0, 0, 0],
-    [0, 1.5, 0],
+    [0, 2.1, 0], // Adjusted anchor joint for larger scale
   ] as any);
 
   useEffect(() => {
@@ -292,10 +292,10 @@ function Band({
           {...segmentProps}
           type={dragged ? 'kinematicPosition' : 'dynamic'}
         >
-          <CuboidCollider args={[0.8, 1.125, 0.01]} />
+          <CuboidCollider args={[1.14, 1.6, 0.01]} />
           <group
-            scale={2.25}
-            position={[0, -1.2, -0.05]}
+            scale={3.2}
+            position={[0, -1.7, -0.05]}
             onPointerOver={() => hover(true)}
             onPointerOut={() => hover(false)}
             onPointerUp={(e: any) => (e.target.releasePointerCapture(e.pointerId), drag(false))}
