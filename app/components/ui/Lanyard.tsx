@@ -1,288 +1,341 @@
+/* eslint-disable react/no-unknown-property */
 'use client';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Canvas, extend, useFrame } from '@react-three/fiber';
+import { useGLTF, useTexture, Environment, Lightformer } from '@react-three/drei';
+import {
+  BallCollider,
+  CuboidCollider,
+  Physics,
+  RigidBody,
+  useRopeJoint,
+  useSphericalJoint,
+} from '@react-three/rapier';
+import { MeshLineGeometry, MeshLineMaterial } from 'meshline';
+import * as THREE from 'three';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
+// Public folder assets (Next.js pattern — no webpack import needed)
+const CARD_GLB = '/card.glb';
+const LANYARD_PNG = '/lanyard.png';
 
-interface Point {
-    x: number;
-    y: number;
-    oldX: number;
-    oldY: number;
-    isFixed?: boolean;
-}
+extend({ MeshLineGeometry, MeshLineMaterial });
 
-interface Constraint {
-    p1: Point;
-    p2: Point;
-    distance: number;
-}
+// 1×1 transparent pixel fallback when no custom face image is supplied
+const BLANK_PIXEL =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+// UV rects for the card atlas (front = left half, back = right half)
+const FRONT_UV_RECT = { x: 0, y: 0, w: 0.5, h: 0.755 };
+const BACK_UV_RECT = { x: 0.5, y: 0, w: 0.5, h: 0.757 };
 
 interface LanyardProps {
-    imageSrc: string;
-    cardTitle: string;
-    cardSubtitle: string;
-    cardMajor: string;
+  position?: [number, number, number];
+  gravity?: [number, number, number];
+  fov?: number;
+  transparent?: boolean;
+  frontImage?: string | null;
+  backImage?: string | null;
+  imageFit?: 'cover' | 'contain';
+  lanyardImage?: string | null;
+  lanyardWidth?: number;
 }
 
-const Lanyard: React.FC<LanyardProps> = ({ imageSrc, cardTitle, cardSubtitle, cardMajor }) => {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [isDragging, setIsDragging] = useState(false);
-    const mousePos = useRef({ x: 0, y: 0 });
+export default function Lanyard({
+  position = [0, 0, 30],
+  gravity = [0, -40, 0],
+  fov = 20,
+  transparent = true,
+  frontImage = null,
+  backImage = null,
+  imageFit = 'cover',
+  lanyardImage = null,
+  lanyardWidth = 1,
+}: LanyardProps) {
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth < 768
+  );
 
-    // Physics parameters
-    const points = useRef<Point[]>([]);
-    const constraints = useRef<Constraint[]>([]);
-    const segmentCount = 10;
-    const segmentLength = 15;
-    const gravity = 0.5;
-    const friction = 0.98;
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-    const [cardState, setCardState] = useState({ x: 0, y: 0, angle: 0 });
-
-    const initPhysics = useCallback(() => {
-        const pts: Point[] = [];
-        const ctrs: Constraint[] = [];
-
-        // Initial anchor point (top center)
-        const startX = 150;
-        const startY = 10;
-
-        for (let i = 0; i <= segmentCount; i++) {
-            // Add a horizontal offset and randomized vertical jitter for the "mental" intro effect
-            const offset = i * 15 + (Math.random() * 20 - 10);
-            pts.push({
-                x: startX + (i === 0 ? 0 : offset),
-                y: startY + i * (segmentLength - 2),
-                oldX: startX + (i === 0 ? 0 : offset),
-                oldY: startY + i * (segmentLength - 2),
-                isFixed: i === 0
-            });
-
-            if (i > 0) {
-                ctrs.push({
-                    p1: pts[i - 1],
-                    p2: pts[i],
-                    distance: segmentLength
-                });
-            }
+  return (
+    <div className="relative z-0 w-full h-full flex justify-center items-center">
+      <Canvas
+        camera={{ position: position, fov: fov }}
+        dpr={[1, isMobile ? 1.5 : 2]}
+        gl={{ alpha: transparent }}
+        onCreated={({ gl }) =>
+          gl.setClearColor(new THREE.Color(0x000000), transparent ? 0 : 1)
         }
+      >
+        <ambientLight intensity={Math.PI} />
+        <Physics gravity={gravity} timeStep={isMobile ? 1 / 30 : 1 / 60}>
+          <Band
+            isMobile={isMobile}
+            frontImage={frontImage}
+            backImage={backImage}
+            imageFit={imageFit}
+            lanyardImage={lanyardImage}
+            lanyardWidth={lanyardWidth}
+          />
+        </Physics>
+        <Environment blur={0.75}>
+          <Lightformer
+            intensity={2}
+            color="white"
+            position={[0, -1, 5]}
+            rotation={[0, 0, Math.PI / 3]}
+            scale={[100, 0.1, 1]}
+          />
+          <Lightformer
+            intensity={3}
+            color="white"
+            position={[-1, -1, 1]}
+            rotation={[0, 0, Math.PI / 3]}
+            scale={[100, 0.1, 1]}
+          />
+          <Lightformer
+            intensity={3}
+            color="white"
+            position={[1, 1, 1]}
+            rotation={[0, 0, Math.PI / 3]}
+            scale={[100, 0.1, 1]}
+          />
+          <Lightformer
+            intensity={10}
+            color="white"
+            position={[-10, 0, 14]}
+            rotation={[0, Math.PI / 2, Math.PI / 3]}
+            scale={[100, 10, 1]}
+          />
+        </Environment>
+      </Canvas>
+    </div>
+  );
+}
 
-        points.current = pts;
-        constraints.current = ctrs;
-        // Set initial state
-        setCardState({ x: startX, y: startY + segmentCount * segmentLength, angle: 0 });
-    }, [segmentCount, segmentLength]);
+interface BandProps {
+  maxSpeed?: number;
+  minSpeed?: number;
+  isMobile?: boolean;
+  frontImage?: string | null;
+  backImage?: string | null;
+  imageFit?: 'cover' | 'contain';
+  lanyardImage?: string | null;
+  lanyardWidth?: number;
+}
 
-    useEffect(() => {
-        initPhysics();
+function Band({
+  maxSpeed = 50,
+  minSpeed = 0,
+  isMobile = false,
+  frontImage = null,
+  backImage = null,
+  imageFit = 'cover',
+  lanyardImage = null,
+  lanyardWidth = 1,
+}: BandProps) {
+  const band = useRef<any>(null);
+  const fixed = useRef<any>(null);
+  const j1 = useRef<any>(null);
+  const j2 = useRef<any>(null);
+  const j3 = useRef<any>(null);
+  const card = useRef<any>(null);
 
-        let animId: number;
-        const ctx = canvasRef.current?.getContext('2d');
+  const vec = new THREE.Vector3();
+  const ang = new THREE.Vector3();
+  const rot = new THREE.Vector3();
+  const dir = new THREE.Vector3();
 
-        const update = () => {
-            // Update points (Verlet)
-            points.current.forEach(p => {
-                if (p.isFixed) return;
+  const segmentProps = {
+    type: 'dynamic' as const,
+    canSleep: true,
+    colliders: false as const,
+    angularDamping: 4,
+    linearDamping: 4,
+  };
 
-                const vx = (p.x - p.oldX) * friction;
-                const vy = (p.y - p.oldY) * friction;
+  const { nodes, materials } = useGLTF(CARD_GLB) as any;
+  const texture = useTexture(lanyardImage || LANYARD_PNG);
+  const frontTex = useTexture(frontImage || BLANK_PIXEL);
+  const backTex = useTexture(backImage || BLANK_PIXEL);
 
-                p.oldX = p.x;
-                p.oldY = p.y;
+  const cardMap = useMemo(() => {
+    const baseMap = materials.base.map;
+    if (!frontImage && !backImage) return baseMap;
 
-                p.x += vx;
-                p.y += vy + gravity;
-            });
+    const baseImg = baseMap.image;
+    const W = baseImg.width;
+    const H = baseImg.height;
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return baseMap;
+    ctx.drawImage(baseImg, 0, 0, W, H);
 
-            // Handle dragging the last point (ID Card)
-            if (isDragging) {
-                const lastPoint = points.current[points.current.length - 1];
-                lastPoint.x = mousePos.current.x;
-                lastPoint.y = mousePos.current.y;
-            }
-
-            // Constraints
-            for (let i = 0; i < 5; i++) {
-                constraints.current.forEach(c => {
-                    const dx = c.p2.x - c.p1.x;
-                    const dy = c.p2.y - c.p1.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    const diff = (c.distance - dist) / dist;
-                    const offsetX = dx * diff * 0.5;
-                    const offsetY = dy * diff * 0.5;
-
-                    if (!c.p1.isFixed) {
-                        c.p1.x -= offsetX;
-                        c.p1.y -= offsetY;
-                    }
-                    if (!c.p2.isFixed) {
-                        c.p2.x += offsetX;
-                        c.p2.y += offsetY;
-                    }
-                });
-            }
-
-            // Update Card State for React render
-            const lp = points.current[points.current.length - 1];
-            const pp = points.current[points.current.length - 2];
-            if (lp && pp) {
-                const ang = Math.atan2(lp.y - pp.y, lp.x - pp.x) - Math.PI / 2;
-                setCardState({ x: lp.x, y: lp.y, angle: ang });
-            }
-
-            // Render Rope on Canvas
-            if (ctx && canvasRef.current) {
-                ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-                ctx.beginPath();
-                ctx.moveTo(points.current[0].x, points.current[0].y);
-                for (let i = 1; i < points.current.length; i++) {
-                    ctx.lineTo(points.current[i].x, points.current[i].y);
-                }
-                ctx.strokeStyle = '#6366f1';
-                ctx.lineWidth = 2.5;
-                ctx.lineCap = 'round';
-                ctx.stroke();
-
-                // Draw Anchor
-                ctx.beginPath();
-                ctx.arc(points.current[0].x, points.current[0].y, 5, 0, Math.PI * 2);
-                ctx.fillStyle = '#6366f1';
-                ctx.fill();
-            }
-
-            animId = requestAnimationFrame(update);
-        };
-
-        update();
-        return () => cancelAnimationFrame(animId);
-    }, [isDragging, initPhysics]);
-
-    const handleMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
-        setIsDragging(true);
-        updateMousePos(e);
+    const drawFitted = (img: HTMLImageElement, rect: { x: number; y: number; w: number; h: number }) => {
+      const rx = rect.x * W;
+      const ry = rect.y * H;
+      const rw = rect.w * W;
+      const rh = rect.h * H;
+      const pick = imageFit === 'contain' ? Math.min : Math.max;
+      const scale = pick(rw / img.width, rh / img.height);
+      const dw = img.width * scale;
+      const dh = img.height * scale;
+      const dx = rx + (rw - dw) / 2;
+      const dy = ry + (rh - dh) / 2;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(rx, ry, rw, rh);
+      ctx.clip();
+      ctx.drawImage(img, dx, dy, dw, dh);
+      ctx.restore();
     };
 
-    const handleMouseMove = (e: React.MouseEvent | React.TouchEvent) => {
-        if (!isDragging) return;
-        updateMousePos(e);
-    };
+    if (frontImage && frontTex.image) drawFitted(frontTex.image as HTMLImageElement, FRONT_UV_RECT);
+    if (backImage && backTex.image) drawFitted(backTex.image as HTMLImageElement, BACK_UV_RECT);
 
-    const updateMousePos = (e: React.MouseEvent | React.TouchEvent) => {
-        if (!containerRef.current) return;
-        const rect = containerRef.current.getBoundingClientRect();
-        const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
-        const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
-        mousePos.current = {
-            x: clientX - rect.left,
-            y: clientY - rect.top
-        };
-    };
+    const composite = new THREE.CanvasTexture(canvas);
+    composite.colorSpace = THREE.SRGBColorSpace;
+    composite.flipY = baseMap.flipY;
+    composite.anisotropy = 16;
+    composite.needsUpdate = true;
+    return composite;
+  }, [frontImage, backImage, imageFit, frontTex, backTex, materials.base.map]);
 
-    const handleMouseUp = () => setIsDragging(false);
+  const [curve] = useState(
+    () =>
+      new THREE.CatmullRomCurve3([
+        new THREE.Vector3(),
+        new THREE.Vector3(),
+        new THREE.Vector3(),
+        new THREE.Vector3(),
+      ])
+  );
+  const [dragged, drag] = useState<THREE.Vector3 | false>(false);
+  const [hovered, hover] = useState(false);
 
-    // Calculate card rotation based on last segments
-    const lastP = points.current[points.current.length - 1];
-    const prevP = points.current[points.current.length - 2];
-    const angle = lastP && prevP ? Math.atan2(lastP.y - prevP.y, lastP.x - prevP.x) - Math.PI / 2 : 0;
+  useRopeJoint(fixed, j1, [[0, 0, 0], [0, 0, 0], 1] as any);
+  useRopeJoint(j1, j2, [[0, 0, 0], [0, 0, 0], 1] as any);
+  useRopeJoint(j2, j3, [[0, 0, 0], [0, 0, 0], 1] as any);
+  useSphericalJoint(j3, card, [
+    [0, 0, 0],
+    [0, 1.5, 0],
+  ] as any);
 
-    return (
-        <div
-            ref={containerRef}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onTouchMove={handleMouseMove}
-            onTouchEnd={handleMouseUp}
-            style={{
-                position: 'relative',
-                width: '300px',
-                height: '500px',
-                overflow: 'visible',
-                cursor: isDragging ? 'grabbing' : 'grab'
-            }}
+  useEffect(() => {
+    if (hovered) {
+      document.body.style.cursor = dragged ? 'grabbing' : 'grab';
+      return () => void (document.body.style.cursor = 'auto');
+    }
+  }, [hovered, dragged]);
+
+  useFrame((state, delta) => {
+    if (dragged) {
+      vec.set(state.pointer.x, state.pointer.y, 0.5).unproject(state.camera);
+      dir.copy(vec).sub(state.camera.position).normalize();
+      vec.add(dir.multiplyScalar(state.camera.position.length()));
+      [card, j1, j2, j3, fixed].forEach(ref => ref.current?.wakeUp());
+      card.current?.setNextKinematicTranslation({
+        x: vec.x - (dragged as THREE.Vector3).x,
+        y: vec.y - (dragged as THREE.Vector3).y,
+        z: vec.z - (dragged as THREE.Vector3).z,
+      });
+    }
+    if (fixed.current) {
+      [j1, j2].forEach(ref => {
+        if (!ref.current.lerped)
+          ref.current.lerped = new THREE.Vector3().copy(ref.current.translation());
+        const clampedDistance = Math.max(
+          0.1,
+          Math.min(1, ref.current.lerped.distanceTo(ref.current.translation()))
+        );
+        ref.current.lerped.lerp(
+          ref.current.translation(),
+          delta * (minSpeed + clampedDistance * (maxSpeed - minSpeed))
+        );
+      });
+      curve.points[0].copy(j3.current.translation());
+      curve.points[1].copy(j2.current.lerped);
+      curve.points[2].copy(j1.current.lerped);
+      curve.points[3].copy(fixed.current.translation());
+      band.current.geometry.setPoints(curve.getPoints(isMobile ? 16 : 32));
+      ang.copy(card.current.angvel());
+      rot.copy(card.current.rotation());
+      card.current.setAngvel({ x: ang.x, y: ang.y - rot.y * 0.25, z: ang.z });
+    }
+  });
+
+  curve.curveType = 'chordal';
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+
+  return (
+    <>
+      <group position={[0, 4, 0]}>
+        <RigidBody ref={fixed} {...segmentProps} type="fixed" />
+        <RigidBody position={[0.5, 0, 0]} ref={j1} {...segmentProps}>
+          <BallCollider args={[0.1]} />
+        </RigidBody>
+        <RigidBody position={[1, 0, 0]} ref={j2} {...segmentProps}>
+          <BallCollider args={[0.1]} />
+        </RigidBody>
+        <RigidBody position={[1.5, 0, 0]} ref={j3} {...segmentProps}>
+          <BallCollider args={[0.1]} />
+        </RigidBody>
+        <RigidBody
+          position={[2, 0, 0]}
+          ref={card}
+          {...segmentProps}
+          type={dragged ? 'kinematicPosition' : 'dynamic'}
         >
-            <canvas
-                ref={canvasRef}
-                width={300}
-                height={500}
-                style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
-            />
+          <CuboidCollider args={[0.8, 1.125, 0.01]} />
+          <group
+            scale={2.25}
+            position={[0, -1.2, -0.05]}
+            onPointerOver={() => hover(true)}
+            onPointerOut={() => hover(false)}
+            onPointerUp={(e: any) => (e.target.releasePointerCapture(e.pointerId), drag(false))}
+            onPointerDown={(e: any) => (
+              e.target.setPointerCapture(e.pointerId),
+              drag(
+                new THREE.Vector3().copy(e.point).sub(vec.copy(card.current.translation()))
+              )
+            )}
+          >
+            <mesh geometry={nodes.card.geometry}>
+              <meshPhysicalMaterial
+                map={cardMap}
+                map-anisotropy={16}
+                clearcoat={isMobile ? 0 : 1}
+                clearcoatRoughness={0.15}
+                roughness={0.9}
+                metalness={0.8}
+              />
+            </mesh>
+            <mesh geometry={nodes.clip.geometry} material={materials.metal} material-roughness={0.3} />
+            <mesh geometry={nodes.clamp.geometry} material={materials.metal} />
+          </group>
+        </RigidBody>
+      </group>
+      <mesh ref={band}>
+        <meshLineGeometry />
+        <meshLineMaterial
+          color="white"
+          depthTest={false}
+          resolution={isMobile ? [1000, 2000] : [1000, 1000]}
+          useMap
+          map={texture}
+          repeat={[-4, 1]}
+          lineWidth={lanyardWidth}
+        />
+      </mesh>
+    </>
+  );
+}
 
-            {/* ID CARD */}
-            <div
-                onMouseDown={handleMouseDown}
-                onTouchStart={handleMouseDown}
-                style={{
-                    position: 'absolute',
-                    left: cardState.x,
-                    top: cardState.y,
-                    width: '180px',
-                    transform: `translate(-50%, 0) rotate(${cardState.angle}rad)`,
-                    transformOrigin: 'top center',
-                    pointerEvents: 'auto',
-                    userSelect: 'none',
-                    zIndex: 10,
-                }}
-            >
-                <div style={{
-                    borderRadius: '16px',
-                    overflow: 'hidden',
-                    background: 'rgba(10, 10, 26, 0.8)',
-                    border: '1px solid rgba(99, 102, 241, 0.4)',
-                    backdropFilter: 'blur(16px)',
-                    boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 0 30px rgba(99,102,241,0.2)',
-                }}>
-                    {/* Header */}
-                    <div style={{
-                        background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                        height: '40px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: '0 12px',
-                    }}>
-                        <span style={{ fontSize: '10px', color: '#fff', fontWeight: 700, letterSpacing: '1px' }}>
-                            {cardSubtitle}
-                        </span>
-                    </div>
-
-                    {/* Photo */}
-                    <div style={{ position: 'relative', height: '140px', width: '100%' }}>
-                        <Image
-                            src={imageSrc}
-                            alt="ID Card Photo"
-                            fill
-                            style={{ objectFit: 'cover', objectPosition: 'center bottom' }}
-                            draggable={false}
-                        />
-                    </div>
-
-                    {/* Content */}
-                    <div style={{ padding: '16px', textAlign: 'center' }}>
-                        <h4 style={{ fontSize: '14px', fontWeight: 800, color: '#fff', margin: '0 0 4px' }}>
-                            {cardTitle}
-                        </h4>
-                        <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', margin: '0' }}>
-                            {cardMajor}
-                        </p>
-                        <div style={{
-                            marginTop: '12px',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            padding: '4px 8px',
-                            background: 'rgba(34,197,94,0.1)',
-                            border: '1px solid rgba(34,197,94,0.3)',
-                            borderRadius: '50px',
-                        }}>
-                            <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#22c55e' }} />
-                            <span style={{ fontSize: '9px', color: '#22c55e', fontWeight: 700 }}>AVAILABLE</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-export default Lanyard;
+// Preload the card model
+useGLTF.preload(CARD_GLB);
