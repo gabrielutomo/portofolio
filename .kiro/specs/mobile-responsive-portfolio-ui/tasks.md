@@ -59,7 +59,7 @@ Implement mobile-responsive enhancements for the Next.js portfolio website inclu
     - **Validates: Requirements 2.5, 4.1, 4.3**
     - Test that animation frame rate doesn't drop below 30fps on mobilee
 
-- [ ] 3. Checkpoint - Core components implementation
+- [~] 3. Checkpoint - Core components implementation
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 4. Implement mobile-responsive layouts
@@ -91,7 +91,7 @@ Implement mobile-responsive enhancements for the Next.js portfolio website inclu
     - **Validates: Requirements 2.1, 3.2**
     - Test that BorderGlow only applies to featured projects and doesn't interfere with touch
 
-- [ ] 5. Checkpoint - Mobile layout implementation
+- [~] 5. Checkpoint - Mobile layout implementation
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 6. Add new project and React Bits integration

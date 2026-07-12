@@ -25,9 +25,8 @@ const BLANK_PIXEL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 
 // UV rects for the card atlas (front = left half, back = right half)
-// Adjusted to show full image without cropping
-const FRONT_UV_RECT = { x: 0, y: 0.05, w: 0.5, h: 0.85 };
-const BACK_UV_RECT = { x: 0.5, y: 0.05, w: 0.5, h: 0.85 };
+const FRONT_UV_RECT = { x: 0, y: 0, w: 0.5, h: 0.755 };
+const BACK_UV_RECT = { x: 0.5, y: 0, w: 0.5, h: 0.757 };
 
 interface LanyardProps {
   position?: [number, number, number];
@@ -44,9 +43,9 @@ interface LanyardProps {
 
 function CameraLookAt({ target }: { target: [number, number, number] }) {
   const { camera } = useThree();
-  useFrame(() => {
+  useEffect(() => {
     camera.lookAt(target[0], target[1], target[2]);
-  });
+  }, [camera, target[0], target[1], target[2]]);
   return null;
 }
 
@@ -199,7 +198,7 @@ function Band({
       const dw = img.width * scale;
       const dh = img.height * scale;
       const dx = rx + (rw - dw) / 2;
-      const dy = ry + (rh - dh) / 2; // Center align for better framing
+      const dy = ry + (rh - dh); // Align to the bottom of the card face
       ctx.save();
       ctx.beginPath();
       ctx.rect(rx, ry, rw, rh);
@@ -247,13 +246,6 @@ function Band({
   }, [hovered, dragged]);
 
   useFrame((state, delta) => {
-    if (state.clock.getElapsedTime() % 2 < 0.05) {
-      const cPos = card.current?.translation();
-      const fPos = fixed.current?.translation();
-      if (cPos && fPos) {
-        console.log("LANYARD_XYZ card:", cPos.x.toFixed(3), cPos.y.toFixed(3), cPos.z.toFixed(3), "fixed:", fPos.x.toFixed(3), fPos.y.toFixed(3), fPos.z.toFixed(3));
-      }
-    }
     if (dragged) {
       vec.set(state.pointer.x, state.pointer.y, 0.5).unproject(state.camera);
       dir.copy(vec).sub(state.camera.position).normalize();
