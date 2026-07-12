@@ -24,12 +24,12 @@ const LanyardAbout: React.FC<LanyardAboutProps> = ({ imageSrc }) => {
             <div className="reveal" style={{ flexShrink: 0, width: '460px', height: '580px' }}>
                 <Lanyard
                     frontImage={imageSrc}
-                    position={[0, -0.5, 8]}
-                    lookAt={[0, -0.5, 0]}
+                    position={[0, -2, 15]}
+                    lookAt={[0, -2, 0]}
                     gravity={[0, -40, 0]}
-                    fov={18}
+                    fov={25}
                     lanyardWidth={1}
-                    imageFit="contain"
+                    imageFit="cover"
                 />
             </div>
 
