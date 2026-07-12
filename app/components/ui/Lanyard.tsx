@@ -25,8 +25,9 @@ const BLANK_PIXEL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 
 // UV rects for the card atlas (front = left half, back = right half)
-const FRONT_UV_RECT = { x: 0, y: 0, w: 0.5, h: 0.755 };
-const BACK_UV_RECT = { x: 0.5, y: 0, w: 0.5, h: 0.757 };
+// Adjusted Y offset and height to show full face without cropping head
+const FRONT_UV_RECT = { x: 0, y: 0.02, w: 0.5, h: 0.88 };
+const BACK_UV_RECT = { x: 0.5, y: 0.02, w: 0.5, h: 0.88 };
 
 interface LanyardProps {
   position?: [number, number, number];
@@ -198,7 +199,7 @@ function Band({
       const dw = img.width * scale;
       const dh = img.height * scale;
       const dx = rx + (rw - dw) / 2;
-      const dy = ry + (rh - dh); // Align to the bottom of the card face
+      const dy = ry + (rh - dh) / 2; // Center align vertically for better framing
       ctx.save();
       ctx.beginPath();
       ctx.rect(rx, ry, rw, rh);
