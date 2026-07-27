@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unknown-property */
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Canvas, extend, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, extend, useFrame } from '@react-three/fiber';
 import { useGLTF, useTexture, Environment, Lightformer } from '@react-three/drei';
 import {
   BallCollider,
@@ -25,13 +25,11 @@ const BLANK_PIXEL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 
 // UV rects for the card atlas (front = left half, back = right half)
-// Maximized area to show full photo without any cropping
-const FRONT_UV_RECT = { x: 0, y: 0, w: 0.5, h: 1.0 };
-const BACK_UV_RECT = { x: 0.5, y: 0, w: 0.5, h: 1.0 };
+const FRONT_UV_RECT = { x: 0, y: 0, w: 0.5, h: 0.755 };
+const BACK_UV_RECT = { x: 0.5, y: 0, w: 0.5, h: 0.757 };
 
 interface LanyardProps {
   position?: [number, number, number];
-  lookAt?: [number, number, number];
   gravity?: [number, number, number];
   fov?: number;
   transparent?: boolean;
@@ -42,17 +40,8 @@ interface LanyardProps {
   lanyardWidth?: number;
 }
 
-function CameraLookAt({ target }: { target: [number, number, number] }) {
-  const { camera } = useThree();
-  useEffect(() => {
-    camera.lookAt(target[0], target[1], target[2]);
-  }, [camera, target[0], target[1], target[2]]);
-  return null;
-}
-
 export default function Lanyard({
-  position = [0, 0, 30],
-  lookAt = [0, 0, 0] as [number, number, number],
+  position = [0, 0, 20],
   gravity = [0, -40, 0],
   fov = 20,
   transparent = true,
@@ -73,7 +62,7 @@ export default function Lanyard({
   }, []);
 
   return (
-    <div className="relative z-0 w-full h-full flex justify-center items-center">
+    <div className="relative z-0 w-full h-full flex justify-center items-center transform scale-100 origin-center">
       <Canvas
         camera={{ position: position, fov: fov }}
         dpr={[1, isMobile ? 1.5 : 2]}
@@ -82,7 +71,6 @@ export default function Lanyard({
           gl.setClearColor(new THREE.Color(0x000000), transparent ? 0 : 1)
         }
       >
-        <CameraLookAt target={lookAt} />
         <ambientLight intensity={Math.PI} />
         <Physics gravity={gravity} timeStep={isMobile ? 1 / 30 : 1 / 60}>
           <Band
@@ -189,7 +177,10 @@ function Band({
     if (!ctx) return baseMap;
     ctx.drawImage(baseImg, 0, 0, W, H);
 
-    const drawFitted = (img: HTMLImageElement, rect: { x: number; y: number; w: number; h: number }) => {
+    const drawFitted = (
+      img: HTMLImageElement,
+      rect: { x: number; y: number; w: number; h: number }
+    ) => {
       const rx = rect.x * W;
       const ry = rect.y * H;
       const rw = rect.w * W;
@@ -199,7 +190,7 @@ function Band({
       const dw = img.width * scale;
       const dh = img.height * scale;
       const dx = rx + (rw - dw) / 2;
-      const dy = ry + (rh - dh) / 2; // Center align vertically for better framing
+      const dy = ry + (rh - dh) / 2;
       ctx.save();
       ctx.beginPath();
       ctx.rect(rx, ry, rw, rh);
@@ -208,8 +199,10 @@ function Band({
       ctx.restore();
     };
 
-    if (frontImage && frontTex.image) drawFitted(frontTex.image as HTMLImageElement, FRONT_UV_RECT);
-    if (backImage && backTex.image) drawFitted(backTex.image as HTMLImageElement, BACK_UV_RECT);
+    if (frontImage && frontTex.image)
+      drawFitted(frontTex.image as HTMLImageElement, FRONT_UV_RECT);
+    if (backImage && backTex.image)
+      drawFitted(backTex.image as HTMLImageElement, BACK_UV_RECT);
 
     const composite = new THREE.CanvasTexture(canvas);
     composite.colorSpace = THREE.SRGBColorSpace;
@@ -236,7 +229,7 @@ function Band({
   useRopeJoint(j2, j3, [[0, 0, 0], [0, 0, 0], 1] as any);
   useSphericalJoint(j3, card, [
     [0, 0, 0],
-    [0, 2.1, 0], // Adjusted anchor joint for larger scale
+    [0, 1.5, 0],
   ] as any);
 
   useEffect(() => {
@@ -304,13 +297,15 @@ function Band({
           {...segmentProps}
           type={dragged ? 'kinematicPosition' : 'dynamic'}
         >
-          <CuboidCollider args={[1.14, 1.6, 0.01]} />
+          <CuboidCollider args={[0.8, 1.125, 0.01]} />
           <group
-            scale={3.2}
-            position={[0, -1.7, -0.05]}
+            scale={2.25}
+            position={[0, -1.2, -0.05]}
             onPointerOver={() => hover(true)}
             onPointerOut={() => hover(false)}
-            onPointerUp={(e: any) => (e.target.releasePointerCapture(e.pointerId), drag(false))}
+            onPointerUp={(e: any) => (
+              e.target.releasePointerCapture(e.pointerId), drag(false)
+            )}
             onPointerDown={(e: any) => (
               e.target.setPointerCapture(e.pointerId),
               drag(
@@ -328,7 +323,11 @@ function Band({
                 metalness={0.8}
               />
             </mesh>
-            <mesh geometry={nodes.clip.geometry} material={materials.metal} material-roughness={0.3} />
+            <mesh
+              geometry={nodes.clip.geometry}
+              material={materials.metal}
+              material-roughness={0.3}
+            />
             <mesh geometry={nodes.clamp.geometry} material={materials.metal} />
           </group>
         </RigidBody>
@@ -351,3 +350,4 @@ function Band({
 
 // Preload the card model
 useGLTF.preload(CARD_GLB);
+

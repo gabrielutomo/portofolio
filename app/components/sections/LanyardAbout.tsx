@@ -1,8 +1,8 @@
 'use client';
 
-import Image from 'next/image';
-import { useRef, useEffect, useState } from 'react';
-import Lanyard from '../ui/Lanyard';
+import dynamic from 'next/dynamic';
+
+const Lanyard = dynamic(() => import('../ui/Lanyard'), { ssr: false });
 
 interface LanyardAboutProps {
     imageSrc: string;
@@ -21,11 +21,10 @@ const LanyardAbout: React.FC<LanyardAboutProps> = ({ imageSrc }) => {
     return (
         <div style={{ display: 'flex', gap: '60px', alignItems: 'stretch', flexWrap: 'wrap', justifyContent: 'center' }}>
             {/* Lanyard Card Wrapper */}
-            <div className="reveal" style={{ flexShrink: 0, width: '460px', height: '580px' }}>
+            <div className="reveal" style={{ flexShrink: 0, width: '100%', maxWidth: '460px', height: '580px' }}>
                 <Lanyard
                     frontImage={imageSrc}
-                    position={[0, -3, 10]}
-                    lookAt={[0, -3, 0]}
+                    position={[0, 0, 20]}
                     gravity={[0, -40, 0]}
                     fov={20}
                     lanyardWidth={1}
