@@ -14,7 +14,7 @@ import {
 import { MeshLineGeometry, MeshLineMaterial } from 'meshline';
 import * as THREE from 'three';
 
-// Public folder assets (Next.js pattern — no webpack import needed)
+// Public folder assets (Next.js — no webpack import needed)
 const CARD_GLB = '/card.glb';
 const LANYARD_PNG = '/lanyard.png';
 
@@ -24,7 +24,7 @@ extend({ MeshLineGeometry, MeshLineMaterial });
 const BLANK_PIXEL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 
-// UV rects for the card atlas (front = left half, back = right half)
+// UV rects — front = left half, back = right half (per card.glb atlas)
 const FRONT_UV_RECT = { x: 0, y: 0, w: 0.5, h: 0.755 };
 const BACK_UV_RECT = { x: 0.5, y: 0, w: 0.5, h: 0.757 };
 
@@ -41,7 +41,7 @@ interface LanyardProps {
 }
 
 export default function Lanyard({
-  position = [0, 0, 14],
+  position = [0, 0, 30],
   gravity = [0, -40, 0],
   fov = 20,
   transparent = true,
@@ -62,7 +62,7 @@ export default function Lanyard({
   }, []);
 
   return (
-    <div className="relative z-0 w-full h-full flex justify-center items-center transform scale-100 origin-center">
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <Canvas
         camera={{ position: position, fov: fov }}
         dpr={[1, isMobile ? 1.5 : 2]}
@@ -70,6 +70,7 @@ export default function Lanyard({
         onCreated={({ gl }) =>
           gl.setClearColor(new THREE.Color(0x000000), transparent ? 0 : 1)
         }
+        style={{ width: '100%', height: '100%' }}
       >
         <ambientLight intensity={Math.PI} />
         <Physics gravity={gravity} timeStep={isMobile ? 1 / 30 : 1 / 60}>
@@ -83,34 +84,10 @@ export default function Lanyard({
           />
         </Physics>
         <Environment blur={0.75}>
-          <Lightformer
-            intensity={2}
-            color="white"
-            position={[0, -1, 5]}
-            rotation={[0, 0, Math.PI / 3]}
-            scale={[100, 0.1, 1]}
-          />
-          <Lightformer
-            intensity={3}
-            color="white"
-            position={[-1, -1, 1]}
-            rotation={[0, 0, Math.PI / 3]}
-            scale={[100, 0.1, 1]}
-          />
-          <Lightformer
-            intensity={3}
-            color="white"
-            position={[1, 1, 1]}
-            rotation={[0, 0, Math.PI / 3]}
-            scale={[100, 0.1, 1]}
-          />
-          <Lightformer
-            intensity={10}
-            color="white"
-            position={[-10, 0, 14]}
-            rotation={[0, Math.PI / 2, Math.PI / 3]}
-            scale={[100, 10, 1]}
-          />
+          <Lightformer intensity={2} color="white" position={[0, -1, 5]} rotation={[0, 0, Math.PI / 3]} scale={[100, 0.1, 1]} />
+          <Lightformer intensity={3} color="white" position={[-1, -1, 1]} rotation={[0, 0, Math.PI / 3]} scale={[100, 0.1, 1]} />
+          <Lightformer intensity={3} color="white" position={[1, 1, 1]} rotation={[0, 0, Math.PI / 3]} scale={[100, 0.1, 1]} />
+          <Lightformer intensity={10} color="white" position={[-10, 0, 14]} rotation={[0, Math.PI / 2, Math.PI / 3]} scale={[100, 10, 1]} />
         </Environment>
       </Canvas>
     </div>
@@ -177,10 +154,7 @@ function Band({
     if (!ctx) return baseMap;
     ctx.drawImage(baseImg, 0, 0, W, H);
 
-    const drawFitted = (
-      img: HTMLImageElement,
-      rect: { x: number; y: number; w: number; h: number }
-    ) => {
+    const drawFitted = (img: HTMLImageElement, rect: { x: number; y: number; w: number; h: number }) => {
       const rx = rect.x * W;
       const ry = rect.y * H;
       const rw = rect.w * W;
@@ -199,10 +173,8 @@ function Band({
       ctx.restore();
     };
 
-    if (frontImage && frontTex.image)
-      drawFitted(frontTex.image as HTMLImageElement, FRONT_UV_RECT);
-    if (backImage && backTex.image)
-      drawFitted(backTex.image as HTMLImageElement, BACK_UV_RECT);
+    if (frontImage && frontTex.image) drawFitted(frontTex.image as HTMLImageElement, FRONT_UV_RECT);
+    if (backImage && backTex.image) drawFitted(backTex.image as HTMLImageElement, BACK_UV_RECT);
 
     const composite = new THREE.CanvasTexture(canvas);
     composite.colorSpace = THREE.SRGBColorSpace;
@@ -227,10 +199,7 @@ function Band({
   useRopeJoint(fixed, j1, [[0, 0, 0], [0, 0, 0], 1] as any);
   useRopeJoint(j1, j2, [[0, 0, 0], [0, 0, 0], 1] as any);
   useRopeJoint(j2, j3, [[0, 0, 0], [0, 0, 0], 1] as any);
-  useSphericalJoint(j3, card, [
-    [0, 0, 0],
-    [0, 1.8, 0],
-  ] as any);
+  useSphericalJoint(j3, card, [[0, 0, 0], [0, 1.5, 0]] as any);
 
   useEffect(() => {
     if (hovered) {
@@ -255,10 +224,7 @@ function Band({
       [j1, j2].forEach(ref => {
         if (!ref.current.lerped)
           ref.current.lerped = new THREE.Vector3().copy(ref.current.translation());
-        const clampedDistance = Math.max(
-          0.1,
-          Math.min(1, ref.current.lerped.distanceTo(ref.current.translation()))
-        );
+        const clampedDistance = Math.max(0.1, Math.min(1, ref.current.lerped.distanceTo(ref.current.translation())));
         ref.current.lerped.lerp(
           ref.current.translation(),
           delta * (minSpeed + clampedDistance * (maxSpeed - minSpeed))
@@ -280,7 +246,7 @@ function Band({
 
   return (
     <>
-      <group position={[0, 3.8, 0]}>
+      <group position={[0, 4, 0]}>
         <RigidBody ref={fixed} {...segmentProps} type="fixed" />
         <RigidBody position={[0.5, 0, 0]} ref={j1} {...segmentProps}>
           <BallCollider args={[0.1]} />
@@ -297,20 +263,16 @@ function Band({
           {...segmentProps}
           type={dragged ? 'kinematicPosition' : 'dynamic'}
         >
-          <CuboidCollider args={[0.98, 1.38, 0.01]} />
+          <CuboidCollider args={[0.8, 1.125, 0.01]} />
           <group
-            scale={2.75}
-            position={[0, -1.45, -0.05]}
+            scale={2.25}
+            position={[0, -1.2, -0.05]}
             onPointerOver={() => hover(true)}
             onPointerOut={() => hover(false)}
-            onPointerUp={(e: any) => (
-              e.target.releasePointerCapture(e.pointerId), drag(false)
-            )}
+            onPointerUp={(e: any) => (e.target.releasePointerCapture(e.pointerId), drag(false))}
             onPointerDown={(e: any) => (
               e.target.setPointerCapture(e.pointerId),
-              drag(
-                new THREE.Vector3().copy(e.point).sub(vec.copy(card.current.translation()))
-              )
+              drag(new THREE.Vector3().copy(e.point).sub(vec.copy(card.current.translation())))
             )}
           >
             <mesh geometry={nodes.card.geometry}>
@@ -323,11 +285,7 @@ function Band({
                 metalness={0.8}
               />
             </mesh>
-            <mesh
-              geometry={nodes.clip.geometry}
-              material={materials.metal}
-              material-roughness={0.3}
-            />
+            <mesh geometry={nodes.clip.geometry} material={materials.metal} material-roughness={0.3} />
             <mesh geometry={nodes.clamp.geometry} material={materials.metal} />
           </group>
         </RigidBody>
@@ -348,6 +306,4 @@ function Band({
   );
 }
 
-// Preload the card model
 useGLTF.preload(CARD_GLB);
-
